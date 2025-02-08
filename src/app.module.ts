@@ -1,0 +1,33 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { UserModule } from './user/user.module';
+import { ChannelModule } from './channel/channel.module';
+import { AuthModule } from './auth/auth.module';
+import { MediaModule } from 'src/media/media.module';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { VideoModule } from 'src/videos/video.module';
+
+@Module({
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            expandVariables: true,
+        }),
+        MongooseModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: async (configService: ConfigService) => ({
+                uri: configService.get('MONGODB_URL'),
+            }),
+        }),
+        VideoModule,
+        UserModule,
+        ChannelModule,
+        MediaModule,
+        CloudinaryModule,
+        AuthModule,
+    ],
+    controllers: [],
+    providers: [],
+})
+export class AppModule {}
