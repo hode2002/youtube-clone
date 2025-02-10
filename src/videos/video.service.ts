@@ -2,9 +2,12 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Video } from 'src/videos/video.model';
+import { Video, VideoStatus } from 'src/videos/video.model';
 import { Model } from 'mongoose';
 import { ChannelService } from '../channel/channel.service';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { DEFAULT_PAGE_SIZE } from 'src/utils/constant';
+import { MediaService } from 'src/media/media.service';
 
 @Injectable()
 export class VideoService {
@@ -12,6 +15,7 @@ export class VideoService {
         @InjectModel(Video.name)
         private readonly videoModel: Model<Video>,
         private readonly channelService: ChannelService,
+        private readonly mediaService: MediaService,
     ) {}
 
     async create(file: Express.Multer.File, createVideoDto: CreateVideoDto) {
@@ -34,19 +38,40 @@ export class VideoService {
         return await newVideo.populate('channel');
     }
 
-    findAll() {
-        return `This action returns all videos`;
+    async findByCategory(category: string, paginationDto: PaginationDto) {
+        if (!category) throw new BadRequestException('Missing category');
+        const { skip = 0, limit = DEFAULT_PAGE_SIZE } = paginationDto;
+        return await this.videoModel
+            .find({ category }, {}, { skip: +skip, limit: +limit })
+            .populate('channel')
+            .exec();
     }
 
     async findByVideoId(id: string) {
+        if (!id) throw new BadRequestException('Missing video id');
         return await this.videoModel.findOne({ videoId: id }).populate('channel').exec();
     }
 
     async update(id: string, updateVideoDto: UpdateVideoDto) {
-        return `This action updates a #${id} video`;
+        const video = await this.videoModel.findById(id);
+        if (!video) throw new BadRequestException('Video not found');
+        return await this.videoModel.findByIdAndUpdate(
+            id,
+            {
+                ...updateVideoDto,
+                status: VideoStatus.PUBLISHED,
+                publishedAt: new Date().toISOString(),
+            },
+            { new: true },
+        );
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} video`;
+    async remove(id: string) {
+        const video = await this.videoModel.findById(id);
+        if (!video) throw new BadRequestException('Video not found');
+        return await Promise.all([
+            this.mediaService.delete(video.url),
+            this.videoModel.deleteOne({ _id: id }),
+        ]);
     }
 }

@@ -6,6 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { VideoService } from 'src/videos/video.service';
 import { ChannelModule } from 'src/channel/channel.module';
+import { MediaModule } from 'src/media/media.module';
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { ChannelModule } from 'src/channel/channel.module';
         JwtModule.register({}),
         MongooseModule.forFeature([{ name: Video.name, schema: VideoSchema }]),
         ChannelModule,
+        MediaModule,
     ],
     controllers: [VideoController],
     providers: [VideoService],

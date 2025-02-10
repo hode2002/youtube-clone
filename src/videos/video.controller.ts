@@ -11,7 +11,7 @@ import {
     HttpCode,
     UseInterceptors,
     UploadedFile,
-    Req,
+    Query,
 } from '@nestjs/common';
 import { CreateVideoDto } from 'src/videos/dto/create-video.dto';
 import { UpdateVideoDto } from 'src/videos/dto/update-video.dto';
@@ -21,8 +21,10 @@ import { RoleGuard } from 'src/common/guards';
 import { UserRole } from 'src/user/user.model';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { VideoService } from 'src/videos/video.service';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { Express } from 'express';
 
-@Controller('/videos')
+@Controller('videos')
 export class VideoController {
     constructor(private readonly videoService: VideoService) {}
 
@@ -38,9 +40,13 @@ export class VideoController {
         return await this.videoService.create(file, createVideoDto);
     }
 
-    @Get()
-    findAll() {
-        return this.videoService.findAll();
+    @Get('/category/:category')
+    @HttpCode(HttpStatus.OK)
+    async findByCategory(
+        @Param('category') category: string,
+        @Query() paginationDto: PaginationDto,
+    ) {
+        return await this.videoService.findByCategory(category, paginationDto);
     }
 
     @Get(':id')
@@ -50,12 +56,16 @@ export class VideoController {
     }
 
     @Patch(':id')
-    update(@Param('id') id: string, @Body() updateVideoDto: UpdateVideoDto) {
-        return this.videoService.update(id, updateVideoDto);
+    @Permission(UserRole.CHANNEL)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    async update(@Param('id') id: string, @Body() updateVideoDto: UpdateVideoDto) {
+        return await this.videoService.update(id, updateVideoDto);
     }
 
     @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.videoService.remove(+id);
+    @HttpCode(HttpStatus.OK)
+    async remove(@Param('id') id: string) {
+        return await this.videoService.remove(id);
     }
 }
