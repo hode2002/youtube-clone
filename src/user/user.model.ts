@@ -39,7 +39,7 @@ export class User {
     role: UserRole;
 
     @Prop()
-    refreshToken: string;
+    hashedRefreshToken: string;
 
     @Prop({ default: false })
     hasChannel: boolean;
