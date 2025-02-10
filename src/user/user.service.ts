@@ -34,9 +34,7 @@ export class UserService {
     }
 
     async findById(id: string) {
-        return await this.userModel.findOne({
-            id,
-        });
+        return await this.userModel.findById(id);
     }
 
     async updateByEmail(email: string, updateUserDto: any) {
@@ -44,6 +42,6 @@ export class UserService {
     }
 
     async findByIdAndUpdate(id: string, updateUserDto: any) {
-        return await this.userModel.findByIdAndUpdate(id, { ...updateUserDto });
+        return await this.userModel.findByIdAndUpdate(id, { ...updateUserDto }, { new: true });
     }
 }

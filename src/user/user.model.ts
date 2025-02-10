@@ -44,7 +44,7 @@ export class User {
     @Prop({ default: false })
     hasChannel: boolean;
 
-    @Prop({ type: [Types.ObjectId], ref: 'Channel' })
+    @Prop({ type: [{ type: Types.ObjectId, ref: 'Channel' }] })
     subscriptions: Types.ObjectId[];
 }
 
