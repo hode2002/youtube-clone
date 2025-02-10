@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { BadRequestException, ForbiddenException, ValidationPipe } from '@nestjs/common';
@@ -6,6 +6,8 @@ import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.int
 import helmet from 'helmet';
 import * as compression from 'compression';
 import { ValidationError } from 'class-validator';
+import { HttpExceptionFilter } from 'src/common/filters';
+import { TransformInterceptor } from 'src/common/interceptors';
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS;
 
@@ -42,6 +44,9 @@ async function bootstrap() {
             },
         }),
     );
+
+    app.useGlobalInterceptors(new TransformInterceptor(new Reflector()));
+    app.useGlobalFilters(new HttpExceptionFilter());
 
     const configService = app.get(ConfigService);
     const port = configService.get('PORT');
