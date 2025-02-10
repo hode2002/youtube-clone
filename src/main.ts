@@ -47,6 +47,9 @@ async function bootstrap() {
 
     app.useGlobalInterceptors(new TransformInterceptor(new Reflector()));
     app.useGlobalFilters(new HttpExceptionFilter());
+    app.setGlobalPrefix('/api/v1', {
+        exclude: ['/'],
+    });
 
     const configService = app.get(ConfigService);
     const port = configService.get('PORT');

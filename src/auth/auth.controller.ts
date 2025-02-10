@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { GoogleGuard } from 'src/auth/guards';
 import { Request, Response } from 'express';
 
-@Controller('api/v1/auth')
+@Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 

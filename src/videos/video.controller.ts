@@ -22,7 +22,7 @@ import { UserRole } from 'src/user/user.model';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { VideoService } from 'src/videos/video.service';
 
-@Controller('/api/v1/videos')
+@Controller('/videos')
 export class VideoController {
     constructor(private readonly videoService: VideoService) {}
 

@@ -5,7 +5,7 @@ import { UpdateChannelDto } from './dto/update-channel.dto';
 import { AtJwtGuard } from 'src/auth/guards';
 import { Request } from 'express';
 
-@Controller('api/v1/channels')
+@Controller('channels')
 export class ChannelController {
     constructor(private readonly channelService: ChannelService) {}
 

@@ -15,7 +15,7 @@ import { SuccessResponse } from 'src/common/response';
 import { AtJwtGuard } from 'src/auth/guards';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
-@Controller('api/v1/media')
+@Controller('media')
 export class MediaController {
     constructor(private readonly mediaService: MediaService) {}
 
