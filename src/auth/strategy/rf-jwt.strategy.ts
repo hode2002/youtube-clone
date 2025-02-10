@@ -25,9 +25,9 @@ export class RfJwtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
         if (!refreshToken) throw new BadRequestException('Access denied');
 
         const user = await this.userService.findById(payload.userId);
-        if (!user.refreshToken) throw new BadRequestException('Access denied');
+        if (!user.hashedRefreshToken) throw new BadRequestException('Access denied');
 
-        const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+        const isMatch = await bcrypt.compare(refreshToken, user.hashedRefreshToken);
         if (!isMatch) throw new BadRequestException('Access denied');
 
         return payload;

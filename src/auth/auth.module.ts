@@ -11,5 +11,6 @@ import { UserModule } from 'src/user/user.module';
     imports: [PassportModule, JwtModule.register({}), UserModule],
     controllers: [AuthController],
     providers: [AuthService, AtJwtStrategy, RfJwtStrategy, GoogleStrategy],
+    exports: [AuthService],
 })
 export class AuthModule {}
