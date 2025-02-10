@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { MediaModule } from 'src/media/media.module';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { VideoModule } from 'src/videos/video.module';
+import { PlaylistModule } from './playlist/playlist.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
     imports: [
@@ -26,6 +28,8 @@ import { VideoModule } from 'src/videos/video.module';
         MediaModule,
         CloudinaryModule,
         AuthModule,
+        PlaylistModule,
+        SubscriptionModule,
     ],
     controllers: [],
     providers: [],
