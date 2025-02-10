@@ -6,10 +6,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Channel } from 'diagnostics_channel';
 import { ChannelSchema } from 'src/channel/channel.model';
 import { UserModule } from 'src/user/user.module';
+import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
     imports: [
         MongooseModule.forFeature([{ name: Channel.name, schema: ChannelSchema }]),
+        SubscriptionModule,
         UserModule,
     ],
     controllers: [ChannelController],

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
-import { Channel } from 'diagnostics_channel';
-import mongoose, { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserRole } from 'src/user/user.model';
 import { UserService } from '../user/user.service';
 import { Request } from 'express';
 import { JwtPayload } from 'src/common/types';
+import { Channel } from 'src/channel/channel.model';
+import { SubscriptionService } from 'src/subscription/subscription.service';
 
 @Injectable()
 export class ChannelService {
@@ -15,11 +15,13 @@ export class ChannelService {
         @InjectModel(Channel.name)
         private readonly channelModel: Model<Channel>,
         private readonly userService: UserService,
+        private readonly subscriptionService: SubscriptionService,
     ) {}
 
-    async create(request: Request, createChannelDto: CreateChannelDto) {
+    async create(request: Request) {
         const { userId } = request['user'] as JwtPayload;
-        const userObjectId = new mongoose.Types.ObjectId(userId);
+        const userObjectId = new Types.ObjectId(userId);
+        const user = await this.userService.findById(userId);
 
         const channel = await this.channelModel
             .findOne({ owner: userObjectId })
@@ -27,32 +29,28 @@ export class ChannelService {
             .exec();
         if (channel) return channel;
 
-        await this.userService.findByIdAndUpdate(userId, {
-            role: UserRole.CHANNEL,
-            hasChannel: true,
-        });
+        user.hasChannel = true;
+        user.role = UserRole.CHANNEL;
+        const { avatarUrl, fullName, username } = user;
 
-        return this.channelModel
-            .create({
-                ...createChannelDto,
+        const [newChannel] = await Promise.all([
+            await this.channelModel.create({
+                avatarUrl,
+                name: fullName,
+                uniqueName: username,
                 owner: userObjectId,
-            })
-            .then((channel) => channel.populate('owner'));
-    }
+            }),
+            await user.save(),
+        ]);
 
-    findAll() {
-        return `This action returns all channel`;
+        return await newChannel.populate('owner');
     }
 
     async findById(id: string) {
         return await this.channelModel.findById(id).populate('owner').exec();
     }
 
-    update(id: number, updateChannelDto: UpdateChannelDto) {
-        return `This action updates a #${id} channel`;
-    }
-
-    remove(id: number) {
-        return `This action removes a #${id} channel`;
+    async update(id: string, updateChannelDto: UpdateChannelDto) {
+        return await this.channelModel.findByIdAndUpdate(id, updateChannelDto, { new: true });
     }
 }

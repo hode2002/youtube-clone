@@ -1,9 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Patch,
+    Param,
+    UseGuards,
+    Req,
+    HttpCode,
+    HttpStatus,
+} from '@nestjs/common';
 import { ChannelService } from './channel.service';
-import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
 import { AtJwtGuard } from 'src/auth/guards';
 import { Request } from 'express';
+import { ResponseMessage } from 'src/common/decorators/message.decorator';
 
 @Controller('channels')
 export class ChannelController {
@@ -11,13 +22,10 @@ export class ChannelController {
 
     @Post()
     @UseGuards(AtJwtGuard)
-    async create(@Req() request: Request, @Body() createChannelDto: CreateChannelDto) {
-        return await this.channelService.create(request, createChannelDto);
-    }
-
-    @Get()
-    findAll() {
-        return this.channelService.findAll();
+    @HttpCode(HttpStatus.CREATED)
+    @ResponseMessage('Create successfully')
+    async create(@Req() request: Request) {
+        return await this.channelService.create(request);
     }
 
     @Get(':id')
@@ -26,12 +34,9 @@ export class ChannelController {
     }
 
     @Patch(':id')
+    @UseGuards(AtJwtGuard)
+    @ResponseMessage('Update successfully')
     update(@Param('id') id: string, @Body() updateChannelDto: UpdateChannelDto) {
-        return this.channelService.update(+id, updateChannelDto);
-    }
-
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.channelService.remove(+id);
+        return this.channelService.update(id, updateChannelDto);
     }
 }
