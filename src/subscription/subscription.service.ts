@@ -19,6 +19,15 @@ export class SubscriptionService {
         private readonly userService: UserService,
     ) {}
 
+    async getUserSubscribe(req: Request) {
+        const { userId } = req['user'] as JwtPayload;
+        return await this.subscriptionModel
+            .find({
+                subscriber: new Types.ObjectId(userId),
+            })
+            .populate('channel', 'name avatarUrl');
+    }
+
     async subscribe(req: Request, createSubscriptionDto: CreateSubscriptionDto) {
         const { userId } = req['user'] as JwtPayload;
         const { channelId } = createSubscriptionDto;

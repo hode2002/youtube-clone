@@ -9,6 +9,7 @@ import {
     HttpCode,
     HttpStatus,
     Req,
+    Get,
 } from '@nestjs/common';
 import { SubscriptionService } from './subscription.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
@@ -20,6 +21,14 @@ import { Request } from 'express';
 @Controller('subscriptions')
 export class SubscriptionController {
     constructor(private readonly subscriptionService: SubscriptionService) {}
+
+    @Get()
+    @UseGuards(AtJwtGuard)
+    @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Get user subscribe successfully')
+    async getUserSubscribe(@Req() req: Request) {
+        return await this.subscriptionService.getUserSubscribe(req);
+    }
 
     @Post()
     @UseGuards(AtJwtGuard)
