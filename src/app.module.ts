@@ -9,6 +9,9 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { VideoModule } from 'src/videos/video.module';
 import { PlaylistModule } from './playlist/playlist.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { LikeDislikeModule } from './like-dislike/like-dislike.module';
+import { WatchHistoryModule } from './watch-history/watch-history.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
     imports: [
@@ -30,6 +33,9 @@ import { SubscriptionModule } from './subscription/subscription.module';
         AuthModule,
         PlaylistModule,
         SubscriptionModule,
+        LikeDislikeModule,
+        WatchHistoryModule,
+        CommentModule,
     ],
     controllers: [],
     providers: [],
