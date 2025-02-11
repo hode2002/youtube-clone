@@ -33,10 +33,16 @@ export class Video {
     thumbnail: string;
 
     @Prop({ default: 0 })
+    duration: number;
+
+    @Prop({ default: 0 })
     viewsCount: number;
 
     @Prop({ default: 0 })
     likesCount: number;
+
+    @Prop({ default: 0 })
+    dislikesCount: number;
 
     @Prop({ default: 0 })
     commentsCount: number;
