@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { VideoService } from 'src/videos/video.service';
 import { ChannelModule } from 'src/channel/channel.module';
 import { MediaModule } from 'src/media/media.module';
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { MediaModule } from 'src/media/media.module';
         MongooseModule.forFeature([{ name: Video.name, schema: VideoSchema }]),
         ChannelModule,
         MediaModule,
+        RedisModule,
     ],
     controllers: [VideoController],
     providers: [VideoService],

@@ -12,6 +12,7 @@ import {
     UseInterceptors,
     UploadedFile,
     Query,
+    Req,
 } from '@nestjs/common';
 import { CreateVideoDto } from 'src/videos/dto/create-video.dto';
 import { UpdateVideoDto } from 'src/videos/dto/update-video.dto';
@@ -22,7 +23,8 @@ import { UserRole } from 'src/user/user.model';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { VideoService } from 'src/videos/video.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { Express } from 'express';
+import { Express, Request } from 'express';
+import { ResponseMessage } from 'src/common/decorators/message.decorator';
 
 @Controller('videos')
 export class VideoController {
@@ -40,13 +42,37 @@ export class VideoController {
         return await this.videoService.create(file, createVideoDto);
     }
 
+    @Get('/channel/owner')
+    @Permission(UserRole.CHANNEL)
+    @UseGuards(AtJwtGuard, RoleGuard)
+    @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Get videos successfully')
+    async findByChannelForOwner(@Req() request: Request) {
+        return await this.videoService.findByChannelForOwner(request);
+    }
+
+    @Get('/channel/:uniqueName')
+    @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Get channel videos successfully')
+    async findByChannel(@Req() request: Request, @Param('uniqueName') uniqueName: string) {
+        return await this.videoService.findByChannel(request, uniqueName);
+    }
+
     @Get('/category/:category')
     @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Get category videos successfully')
     async findByCategory(
         @Param('category') category: string,
         @Query() paginationDto: PaginationDto,
     ) {
         return await this.videoService.findByCategory(category, paginationDto);
+    }
+
+    @Post(':videoId/view')
+    @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Increase video view successfully')
+    async increaseView(@Param('videoId') videoId: string, @Req() request: Request) {
+        return await this.videoService.increaseView(videoId, request);
     }
 
     @Get(':id')
