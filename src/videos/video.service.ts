@@ -66,6 +66,48 @@ export class VideoService {
         );
     }
 
+    async increaseView(videoId: string) {
+        return await this.videoModel.findByIdAndUpdate(videoId, {
+            $inc: { viewsCount: -1 },
+        });
+    }
+
+    async increaseCommentsCount(videoId: string) {
+        await this.videoModel.findByIdAndUpdate(videoId, {
+            $inc: { commentsCount: 1 },
+        });
+    }
+
+    async decreaseCommentsCount(videoId: string) {
+        await this.videoModel.findByIdAndUpdate(videoId, {
+            $inc: { commentsCount: -1 },
+        });
+    }
+
+    async increaseLike(videoId: string) {
+        await this.videoModel.findByIdAndUpdate(videoId, {
+            $inc: { likesCount: 1 },
+        });
+    }
+
+    async decreaseLike(videoId: string) {
+        await this.videoModel.findByIdAndUpdate(videoId, {
+            $inc: { likesCount: -1 },
+        });
+    }
+
+    async increaseDisLike(videoId: string) {
+        await this.videoModel.findByIdAndUpdate(videoId, {
+            $inc: { dislikesCount: 1 },
+        });
+    }
+
+    async decreaseDisLike(videoId: string) {
+        await this.videoModel.findByIdAndUpdate(videoId, {
+            $inc: { dislikesCount: -1 },
+        });
+    }
+
     async remove(id: string) {
         const video = await this.videoModel.findById(id);
         if (!video) throw new BadRequestException('Video not found');
