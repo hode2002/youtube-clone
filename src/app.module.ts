@@ -12,6 +12,8 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { LikeDislikeModule } from './like-dislike/like-dislike.module';
 import { WatchHistoryModule } from './watch-history/watch-history.module';
 import { CommentModule } from './comment/comment.module';
+import { SearchModule } from './search/search.module';
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
     imports: [
@@ -25,6 +27,7 @@ import { CommentModule } from './comment/comment.module';
                 uri: configService.get('MONGODB_URL'),
             }),
         }),
+        RedisModule,
         VideoModule,
         UserModule,
         ChannelModule,
@@ -36,6 +39,7 @@ import { CommentModule } from './comment/comment.module';
         LikeDislikeModule,
         WatchHistoryModule,
         CommentModule,
+        SearchModule,
     ],
     controllers: [],
     providers: [],
