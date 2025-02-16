@@ -1,6 +1,6 @@
 import { Controller, Get, Req, Res, UseGuards, HttpStatus, Post, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AtJwtGuard, GoogleGuard } from 'src/auth/guards';
+import { AtJwtGuard, GoogleGuard, RfJwtGuard } from 'src/auth/guards';
 import { Request, Response } from 'express';
 import { ResponseMessage } from 'src/common/decorators/message.decorator';
 
@@ -25,6 +25,14 @@ export class AuthController {
             message: 'Login successfully',
             data: await this.authService.login(req, res),
         };
+    }
+
+    @Post('refresh')
+    @UseGuards(RfJwtGuard)
+    @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Refresh token successfully')
+    async refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+        return await this.authService.refreshAccessToken(req, res);
     }
 
     @Post('logout')

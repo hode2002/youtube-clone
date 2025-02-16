@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { ConfigService } from '@nestjs/config';
-import { Request, Response } from 'express';
+import { CookieOptions, Request, Response } from 'express';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { GoogleProfile, JwtPayload } from 'src/common/types';
@@ -13,6 +13,7 @@ export class AuthService {
     private ACCESS_TOKEN_EXPIRES_IN = this.configService.get<string>('ACCESS_TOKEN_EXPIRES_IN');
     private REFRESH_TOKEN_SECRET = this.configService.get<string>('REFRESH_TOKEN_SECRET');
     private REFRESH_TOKEN_EXPIRES_IN = this.configService.get<string>('REFRESH_TOKEN_EXPIRES_IN');
+    private FRONTEND_REDIRECT_URL = this.configService.get<string>('FRONTEND_REDIRECT_URL');
 
     constructor(
         private readonly configService: ConfigService,
@@ -20,7 +21,9 @@ export class AuthService {
         private readonly userService: UserService,
     ) {}
 
-    async refreshAccessToken(refreshToken: string) {
+    async refreshAccessToken(req: Request, res: Response) {
+        const refreshToken = req.cookies['refresh_token'];
+
         const decoded = jwt.verify(refreshToken, this.REFRESH_TOKEN_SECRET) as JwtPayload;
         const { email, role, userId } = decoded;
 
@@ -34,20 +37,21 @@ export class AuthService {
         const now = Date.now();
         const timeLeft = expiresIn - now;
 
-        let newRefreshToken = refreshToken;
-        let refreshTokenUpdated = false;
-
         if (timeLeft < 7 * 24 * 60 * 60 * 1000) {
-            newRefreshToken = this.jwtService.sign(
+            const newRefreshToken = this.jwtService.sign(
                 { email, role, userId },
                 {
                     secret: this.REFRESH_TOKEN_SECRET,
                     expiresIn: this.REFRESH_TOKEN_EXPIRES_IN,
                 },
             );
-            refreshTokenUpdated = true;
+
             const refreshTokenHashed = await bcrypt.hash(newRefreshToken, 10);
             await this.userService.updateByEmail(email, { refreshTokenHashed });
+
+            this.saveTokenToCookie(res, 'refresh_token', newRefreshToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+            });
         }
 
         const newAccessToken = this.jwtService.sign(
@@ -58,7 +62,7 @@ export class AuthService {
             },
         );
 
-        return { newAccessToken, newRefreshToken, refreshTokenUpdated };
+        return { newAccessToken };
     }
 
     async login(req: Request, res: Response) {
@@ -78,14 +82,12 @@ export class AuthService {
         if (!isUpdated) {
             throw new InternalServerErrorException('Failed to update user with refresh token');
         }
-        res.cookie('refresh_token', tokens.refreshToken, {
-            httpOnly: true,
-            // secure: true,
-            // sameSite: 'strict',
+
+        this.saveTokenToCookie(res, 'refresh_token', tokens.refreshToken, {
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
 
-        const redirectUrl = `${this.configService.get<string>('FRONTEND_REDIRECT_URL')}/auth-success#token=${tokens.accessToken}`;
+        const redirectUrl = `${this.FRONTEND_REDIRECT_URL}/auth-success#token=${tokens.accessToken}`;
         return res.redirect(redirectUrl);
     }
 
@@ -99,14 +101,21 @@ export class AuthService {
             throw new InternalServerErrorException('Failed to update user with refresh token');
         }
 
-        res.cookie('refresh_token', '', {
-            httpOnly: true,
-            // secure: true,
-            // sameSite: 'strict',
+        this.saveTokenToCookie(res, 'refresh_token', '', {
             maxAge: 0,
         });
 
         return { loggedOut: true };
+    }
+
+    private saveTokenToCookie(res: Response, name: string, value: string, options?: CookieOptions) {
+        res.cookie(name, value, {
+            httpOnly: true,
+            // secure: true,
+            // sameSite: 'None',
+            path: '/',
+            ...options,
+        });
     }
 
     createTokenPairs({ email, role, userId }: JwtPayload) {
