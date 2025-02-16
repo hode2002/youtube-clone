@@ -8,6 +8,7 @@ import * as compression from 'compression';
 import { ValidationError } from 'class-validator';
 import { HttpExceptionFilter } from 'src/common/filters';
 import { TransformInterceptor } from 'src/common/interceptors';
+import * as cookieParser from 'cookie-parser';
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS;
 
@@ -28,6 +29,8 @@ async function bootstrap() {
 
     app.enableCors(corsOptions);
     app.use(helmet());
+    app.use(cookieParser());
+
     app.use(compression());
     app.useGlobalPipes(
         new ValidationPipe({
