@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateChannelDto } from './dto/update-channel.dto';
-import { Model, Types } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserRole } from 'src/user/user.model';
 import { UserService } from '../user/user.service';
@@ -46,8 +46,25 @@ export class ChannelService {
         return await newChannel.populate('owner');
     }
 
+    async filter(filter: FilterQuery<Channel>) {
+        return await this.channelModel
+            .find(filter)
+            .select('uniqueName name avatarUrl subscribersCount');
+    }
+
     async findById(id: string) {
         return await this.channelModel.findById(id).populate('owner').exec();
+    }
+
+    async findByUniqueName(uniqueName: string) {
+        return await this.channelModel.findOne({ uniqueName }).populate('owner').exec();
+    }
+
+    async findByOwnerId(ownerId: string) {
+        return await this.channelModel
+            .findOne({ owner: new Types.ObjectId(ownerId) })
+            .populate('owner')
+            .exec();
     }
 
     async update(id: string, updateChannelDto: UpdateChannelDto) {
